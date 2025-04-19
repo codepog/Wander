@@ -13,19 +13,18 @@ app.use(cors());
 app.use(express.json());
 
 // Initialize Llama model
-let model;
-let context;
 let session;
 
 async function initializeLlama() {
   try {
-    model = new LlamaModel({
+    const model = new LlamaModel({
       modelPath: process.env.MODEL_PATH || './models/llama-2-7b-chat.gguf',
       contextSize: 2048,
       batchSize: 512,
     });
-    context = new LlamaContext({ model });
+    const context = new LlamaContext({ model });
     session = new LlamaChatSession({ context });
+    console.log('Llama model initialized successfully');
   } catch (error) {
     console.error('Error initializing Llama:', error);
   }
