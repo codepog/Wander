@@ -1,11 +1,18 @@
 {
+  "name": "wander",
+  "version": "1.0.0",
+  "description": "Time tracking insights with LLaMA",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
   "dependencies": {
-    "chart.js": "^4.4.9",
-    "react-chartjs-2": "^5.3.0"
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "node-fetch": "^2.7.0"
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.3",
-    "tailwindcss": "^4.1.4"
+    "nodemon": "^3.0.3"
   }
 }

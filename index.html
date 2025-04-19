@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Tracking Insights</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #insights {
+            margin-top: 20px;
+            white-space: pre-wrap;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Time Tracking Insights</h1>
+        <p>Enter your time tracking data in JSON format:</p>
+        <textarea id="timeData" placeholder='{
+    "activities": [
+        {
+            "name": "Coding",
+            "duration": 120,
+            "category": "Development"
+        },
+        {
+            "name": "Meeting",
+            "duration": 60,
+            "category": "Communication"
+        }
+    ],
+    "date": "2024-04-19"
+}'></textarea>
+        <button onclick="getInsights()">Get Insights</button>
+        <div id="insights"></div>
+    </div>
+
+    <script>
+        async function getInsights() {
+            const timeData = document.getElementById('timeData').value;
+            const insightsDiv = document.getElementById('insights');
+            
+            try {
+                const response = await fetch('http://localhost:3000/get-insights', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: timeData
+                });
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    insightsDiv.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
+                } else {
+                    insightsDiv.innerHTML = `
+                        <h3>Insights (${new Date(data.timestamp).toLocaleString()}):</h3>
+                        <p>${data.insights}</p>
+                    `;
+                }
+            } catch (error) {
+                insightsDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html> 
