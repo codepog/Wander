@@ -38,12 +38,12 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* AI Chat Section - Moved higher up */}
+      {/* AI Chat Section */}
       <div className="mb-8">
         <AIChat />
       </div>
       
-      {/* Monthly Usage Chart - Moved below AI Chat */}
+      {/* Monthly Usage Chart */}
       <div className="bg-white shadow rounded-lg p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Monthly Usage Trends</h2>
         <MonthlyUsageChart />
