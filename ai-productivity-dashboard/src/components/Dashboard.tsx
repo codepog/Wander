@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../store';
 import InsightGenerator from './InsightGenerator';
 import MonthlyUsageChart from './MonthlyUsageChart';
+import { Chat } from './Chat';
 
 // Define the HealthState interface
 interface HealthState {
@@ -73,8 +74,9 @@ const Dashboard: React.FC = () => {
               <MonthlyUsageChart />
             </div>
             
-            {/* Right Column - Question Input and AI Response */}
-            <div className="lg:col-span-1">
+            {/* Right Column - Chat and Insight Generator */}
+            <div className="lg:col-span-1 space-y-8">
+              <Chat />
               <InsightGenerator />
             </div>
           </div>
