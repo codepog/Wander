@@ -12,7 +12,7 @@ const Dashboard: React.FC = () => {
       <h1 className="text-3xl font-bold text-gray-900 mb-8">Health & Productivity Dashboard</h1>
       
       {/* Health Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white shadow rounded-lg p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-2">Sleep</h3>
           <p className="text-3xl font-bold text-blue-600">{healthData.sleepTime} hrs</p>
@@ -29,12 +29,6 @@ const Dashboard: React.FC = () => {
           <h3 className="text-lg font-medium text-gray-900 mb-2">Workouts</h3>
           <p className="text-3xl font-bold text-purple-600">{healthData.workoutStatus}</p>
           <p className="text-sm text-gray-500">Weekly workouts</p>
-        </div>
-        
-        <div className="bg-white shadow rounded-lg p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">App Usage</h3>
-          <p className="text-3xl font-bold text-orange-600">{healthData.appUsage} hrs</p>
-          <p className="text-sm text-gray-500">Daily average</p>
         </div>
       </div>
 
