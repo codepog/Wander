@@ -1,61 +1,108 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 interface InsightState {
-  insight: string | null;
+  insight: string;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: InsightState = {
-  insight: null,
+  insight: '',
   loading: false,
   error: null,
 };
 
 export const generateInsight = createAsyncThunk(
   'insight/generate',
-  async (question: string) => {
-    // Simulate API call with a timeout
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    // Simple mock responses based on keywords
-    const q = question.toLowerCase();
-    if (q.includes('sleep')) {
-      return `Based on your data, you're getting 7.2 hours of sleep but using your phone for 1.5 hours in bed. Try to reduce phone usage before bed to improve sleep quality.`;
-    } 
-    if (q.includes('step')) {
-      return `You've taken 8500 steps today. The recommended daily step count is 10,000. You're 1500 steps away from your goal.`;
-    } 
-    if (q.includes('workout')) {
-      return `Great job completing your workout today! Keep up the good work!`;
-    } 
-    if (q.includes('habit')) {
-      return `You've spent 3.5 hours on your phone today. Consider setting app usage limits to maintain a healthy balance.`;
-    } 
-    
-    return `I can help you analyze your health data. Try asking about your sleep, steps, workouts, or app usage.`;
+  async (question: string, { dispatch }) => {
+    try {
+      const response = await fetch('http://localhost:11434/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: "llama2",
+          prompt: question,
+          stream: true  // Enable streaming
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      if (!response.body) {
+        throw new Error('ReadableStream not supported');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let responseText = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        // Decode the stream chunk and split by newlines
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+
+        // Process each line
+        for (const line of lines) {
+          if (line.trim()) {
+            try {
+              const jsonResponse = JSON.parse(line);
+              if (jsonResponse.response) {
+                responseText += jsonResponse.response;
+                // Dispatch an action to update the UI with the partial response
+                dispatch(appendResponse(jsonResponse.response));
+              }
+            } catch (e) {
+              console.error('Error parsing JSON:', e);
+            }
+          }
+        }
+      }
+
+      return responseText;
+    } catch (error) {
+      console.error('Error in generateInsight:', error);
+      throw error;
+    }
   }
 );
 
 const insightSlice = createSlice({
   name: 'insight',
   initialState,
-  reducers: {},
+  reducers: {
+    clearInsight: (state) => {
+      state.insight = '';
+      state.error = null;
+    },
+    appendResponse: (state, action) => {
+      state.insight += action.payload;
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(generateInsight.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.insight = '';
       })
-      .addCase(generateInsight.fulfilled, (state, action) => {
+      .addCase(generateInsight.fulfilled, (state) => {
         state.loading = false;
-        state.insight = action.payload;
+        state.error = null;
       })
-      .addCase(generateInsight.rejected, (state) => {
+      .addCase(generateInsight.rejected, (state, action) => {
         state.loading = false;
-        state.error = 'Failed to generate insight';
+        state.error = action.error.message || 'Failed to generate insight';
+        console.error('Rejected with error:', action.error);
       });
   },
 });
 
+export const { clearInsight, appendResponse } = insightSlice.actions;
 export default insightSlice.reducer; 
