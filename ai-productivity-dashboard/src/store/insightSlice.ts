@@ -14,17 +14,15 @@ const initialState: InsightState = {
 
 export const generateInsight = createAsyncThunk(
   'insight/generate',
-  async (question: string, { dispatch }) => {
+  async (question: string) => {
     try {
-      const response = await fetch('http://localhost:11434/api/generate', {
+      const response = await fetch('http://localhost:3000/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: "llama2",
-          prompt: question,
-          stream: true  // Enable streaming
+          prompt: question
         }),
       });
 
@@ -32,40 +30,8 @@ export const generateInsight = createAsyncThunk(
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      if (!response.body) {
-        throw new Error('ReadableStream not supported');
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let responseText = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        // Decode the stream chunk and split by newlines
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
-
-        // Process each line
-        for (const line of lines) {
-          if (line.trim()) {
-            try {
-              const jsonResponse = JSON.parse(line);
-              if (jsonResponse.response) {
-                responseText += jsonResponse.response;
-                // Dispatch an action to update the UI with the partial response
-                dispatch(appendResponse(jsonResponse.response));
-              }
-            } catch (e) {
-              console.error('Error parsing JSON:', e);
-            }
-          }
-        }
-      }
-
-      return responseText;
+      const data = await response.json();
+      return data.response;
     } catch (error) {
       console.error('Error in generateInsight:', error);
       throw error;
@@ -80,9 +46,6 @@ const insightSlice = createSlice({
     clearInsight: (state) => {
       state.insight = '';
       state.error = null;
-    },
-    appendResponse: (state, action) => {
-      state.insight += action.payload;
     }
   },
   extraReducers: (builder) => {
@@ -92,9 +55,10 @@ const insightSlice = createSlice({
         state.error = null;
         state.insight = '';
       })
-      .addCase(generateInsight.fulfilled, (state) => {
+      .addCase(generateInsight.fulfilled, (state, action) => {
         state.loading = false;
         state.error = null;
+        state.insight = action.payload;
       })
       .addCase(generateInsight.rejected, (state, action) => {
         state.loading = false;
@@ -104,5 +68,5 @@ const insightSlice = createSlice({
   },
 });
 
-export const { clearInsight, appendResponse } = insightSlice.actions;
+export const { clearInsight } = insightSlice.actions;
 export default insightSlice.reducer; 
